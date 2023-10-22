@@ -18,11 +18,11 @@ const key = ["counter"]
 
 channel.onmessage = async e => {
   const current = await kv.get(key)
-  channel.postMessage(current.value)
+  sockets.forEach(s => s.send(current.value))
+  const next = (!current.value) ? 1 : ++current.value
+  await kv.set(key, next)
   if (e.target != channel) {
-    sockets.forEach(s => s.send(current.value))
-    const next = (!current.value) ? 1 : ++current.value
-    await kv.set(key, next)
+    channel.postMessage(current.value)
   }
 }
 
