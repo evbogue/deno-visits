@@ -16,8 +16,6 @@ const kv = await Deno.openKv()
 
 const key = ["counter"]
 
-kv.delete(key)
-
 channel.onmessage = async e => {
   console.log(e.data)
   if (e.data === 'Hit') {
