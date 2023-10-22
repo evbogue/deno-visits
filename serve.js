@@ -1,7 +1,7 @@
 const html = `
   <script>
     const ws = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host)
-    ws.onopen = e => {ws.send('Hello World')}
+    ws.onopen = e => {ws.send('Hit')}
     ws.onmessage = e => { 
       counter.textContent = (e.data == '1') ? e.data + ' visit.' : e.data + ' visits.'
     }
@@ -17,13 +17,20 @@ const kv = await Deno.openKv()
 const key = ["counter"]
 
 channel.onmessage = async e => {
-  const current = await kv.get(key)
-  sockets.forEach(s => s.send(current.value))
-  const next = (!current.value) ? 1 : current.value + 1
-  await kv.set(key, next)
-  if (e.target != channel) {
-    channel.postMessage(current.value)
+  console.log(e.data)
+  if (e.data === 'Hit') {
+    await kv.atomic().mutate({
+      type: 'sum',
+      key,
+      value: new Deno.KvU64(1n)
+    }).commit()
   }
+  (e.target != channel) && channel.postMessage(e.data)
+  const v = await kv.get(key)
+  console.log(v)
+  const current = v.value.value
+  sockets.forEach(s => s.send(current))
+  channel.postMessage(current)
 }
 
 Deno.serve((r) => {
