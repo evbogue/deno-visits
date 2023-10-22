@@ -17,17 +17,11 @@ const kv = await Deno.openKv()
 const key = ["counter"]
 
 channel.onmessage = async e => {
-  await kv.atomic().mutate({
-    type: 'sum',
-    key,
-    value: new Deno.KvU64(1n)
-  }).commit()
-
-  const v = await kv.get(key)
-  const counter = v.value.value
-
-  channel.postMessage(counter)
-  sockets.forEach(s => s.send(counter))
+  const current = await kv.get(key)
+  const next = (!current.value) ? 1 : ++current.value
+  await kv.set(key, next)
+  channel.postMessage(next)
+  sockets.forEach(s => s.send(next))
 }
 
 Deno.serve((r) => {
