@@ -21,7 +21,8 @@ channel.onmessage = async e => {
   const current = await kv.get(key)
   const next = (!current.value) ? 1 : ++current.value
   await kv.set(key, next)
-  sockets.forEach(s => s.send(next))
+  const check = await kv.get(key)
+  sockets.forEach(s => s.send(check.value))
 }
 
 Deno.serve((r) => {
