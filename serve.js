@@ -19,7 +19,7 @@ const key = ["counter"]
 channel.onmessage = async e => {
   const current = await kv.get(key)
   sockets.forEach(s => s.send(current.value))
-  const next = (!current.value) ? 1 : ++current.value
+  const next = (!current.value) ? 1 : current.value + 1
   await kv.set(key, next)
   if (e.target != channel) {
     channel.postMessage(current.value)
