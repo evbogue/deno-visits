@@ -17,14 +17,6 @@ const kv = await Deno.openKv()
 const key = ["counter"]
 
 channel.onmessage = async e => {
-  console.log(e.data)
-  if (e.data === 'Hit') {
-    await kv.atomic().mutate({
-      type: 'sum',
-      key,
-      value: new Deno.KvU64(1n)
-    }).commit()
-  }
   (e.target != channel) && channel.postMessage(e.data)
   const v = await kv.get(key)
   console.log(v)
@@ -37,6 +29,13 @@ Deno.serve((r) => {
   try {
     const { socket, response } = Deno.upgradeWebSocket(r)
     sockets.add(socket)
+    socket.onopen = e => {
+      kv.atomic().mutate({
+        type: 'sum',
+        key,
+        value: new Deno.KvU64(1n)
+      }).commit()
+    }
     socket.onmessage = channel.onmessage
     socket.onclose = _ => {
       sockets.delete(socket)
