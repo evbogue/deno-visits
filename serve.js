@@ -17,11 +17,10 @@ const kv = await Deno.openKv()
 const key = ["counter"]
 
 channel.onmessage = async e => {
-  (e.target != channel) 
+  (e.target != channel) && channel.postMessage(e.data) 
   const current = await kv.get(key)
   const next = (!current.value) ? 1 : ++current.value
   await kv.set(key, next)
-  channel.postMessage(next) 
   sockets.forEach(s => s.send(next))
 }
 
