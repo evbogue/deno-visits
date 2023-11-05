@@ -30,11 +30,7 @@ Deno.serve((r) => {
     const { socket, response } = Deno.upgradeWebSocket(r)
     sockets.add(socket)
     socket.onopen = e => {
-      kv.atomic().mutate({
-        type: 'sum',
-        key,
-        value: new Deno.KvU64(1n)
-      }).commit()
+      kv.atomic().sum(key, 1n).commit()
     }
     socket.onmessage = channel.onmessage
     socket.onclose = _ => {
