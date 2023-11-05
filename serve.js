@@ -19,7 +19,6 @@ const key = ["counter"]
 channel.onmessage = async e => {
   (e.target != channel) && channel.postMessage(e.data)
   const v = await kv.get(key)
-  console.log(v)
   const current = v.value.value
   sockets.forEach(s => s.send(current))
   channel.postMessage(current)
@@ -35,7 +34,6 @@ Deno.serve((r) => {
     socket.onmessage = channel.onmessage
     socket.onclose = _ => {
       sockets.delete(socket)
-      sockets.forEach(s => s.send(sockets.size))
     }
     return response
   } catch {
